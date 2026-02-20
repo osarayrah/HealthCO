@@ -616,6 +616,8 @@
   .toggle::after { content:''; position:absolute; right:2px; top:2px; width:15px; height:15px; border-radius:2px; background:var(--parch); }
   .toggle.off { background:var(--card-light); border:1px solid var(--border); }
   .toggle.off::after { right:auto; left:2px; background:var(--muted); }
+  .is-tappable { cursor: pointer; }
+  .tap-flash { outline: 1px solid var(--rust); outline-offset: 1px; }
 </style>
 </head>
 <body>
@@ -1081,6 +1083,16 @@
     });
   }
 
+  function bindTapFeedback(selector) {
+    document.querySelectorAll(selector).forEach(node => {
+      node.classList.add('is-tappable');
+      node.addEventListener('click', () => {
+        node.classList.add('tap-flash');
+        setTimeout(() => node.classList.remove('tap-flash'), 140);
+      });
+    });
+  }
+
   bindBottomNav('home', ['home', 'meds', 'appts', 'chat', 'profile']);
   bindBottomNav('meds', ['home', 'meds', 'appts', 'chat', 'profile']);
   bindBottomNav('appts', ['home', 'meds', 'appts', 'chat', 'profile']);
@@ -1113,6 +1125,41 @@
     item.style.cursor = 'pointer';
     item.addEventListener('click', () => activateScreen(target));
   });
+
+  // Make additional visible controls clickable.
+  bindNav('.appts-title', 'appts');
+  bindNav('.doc-sel-card', 'chat');
+  bindNav('.cal-month', 'appts');
+  bindNav('.chart-block', 'stats');
+  bindNav('.vital-row', 'stats');
+  bindNav('.settings-row', 'profile');
+  bindNav('.notif-action', 'notif');
+  bindNav('.rem-card', 'reminders');
+  bindNav('.profile-emblem', 'profile');
+  bindNav('.profile-tag', 'profile');
+
+  // Header utility controls.
+  bindTapFeedback('.md-dots, .profile-edit, .vid, .rem-add, .cal-nav, .settings-arr, .ni-ico');
+
+  // Simple interactive month switching for calendar arrows.
+  const calMonth = document.querySelector('.cal-month');
+  const calNavs = document.querySelectorAll('.cal-nav');
+  const months = [
+    'January 2025', 'February 2025', 'March 2025', 'April 2025', 'May 2025', 'June 2025',
+    'July 2025', 'August 2025', 'September 2025', 'October 2025', 'November 2025', 'December 2025'
+  ];
+  let monthIdx = months.indexOf(calMonth?.textContent?.trim() || 'March 2025');
+  if (monthIdx < 0) monthIdx = 2;
+  if (calMonth && calNavs.length === 2) {
+    calNavs[0].addEventListener('click', () => {
+      monthIdx = (monthIdx - 1 + months.length) % months.length;
+      calMonth.textContent = months[monthIdx];
+    });
+    calNavs[1].addEventListener('click', () => {
+      monthIdx = (monthIdx + 1) % months.length;
+      calMonth.textContent = months[monthIdx];
+    });
+  }
 
   // Onboarding chips toggle on/off independently.
   document.querySelectorAll('.chip').forEach(chip => {
